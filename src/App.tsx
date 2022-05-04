@@ -1,22 +1,29 @@
 import { useEffect, useRef } from "react";
+import styles from "./App.module.css";
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null!);
 
   const getVideo = () => {
     navigator.mediaDevices
-      .getUserMedia({ video: { width: 720, height: 480 } })
+      .getUserMedia({ video: true })
       .then((stream) => {
         let video = videoRef.current;
         video.srcObject = stream;
-        video.play().then(_=>{}).catch(err => console.log(err))
+        video.addEventListener("loadedmetadata", () => {
+          video.play();
+        });
       })
-      .catch(err => console.log(err))
-  }
+      .catch((err) => console.log(err));
+  };
 
   useEffect(() => getVideo(), [videoRef]);
 
-  return <video ref={videoRef}></video>
+  return (
+    <div className={styles.webcam}>
+      <video ref={videoRef}></video>
+    </div>
+  );
 }
 
 export default App;
