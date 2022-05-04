@@ -9,19 +9,14 @@ function App() {
       .then((stream) => {
         let video = videoRef.current;
         video.srcObject = stream;
-        video?.play();
-      });
-  };
+        video.play().then(_=>{}).catch(err => console.log(err))
+      })
+      .catch(err => console.log(err))
+  }
 
   useEffect(() => getVideo(), [videoRef]);
 
-  return (
-    <div className="App">
-      <div className="camera">
-        <video ref={videoRef}></video>
-      </div>
-    </div>
-  );
+  return <video ref={videoRef}></video>
 }
 
 export default App;
