@@ -1,25 +1,35 @@
 import "@tensorflow/tfjs-backend-webgl"
 import * as blazeface from '@tensorflow-models/blazeface'
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./App.module.css";
 
 function App() {
   const videoRef = useRef<HTMLVideoElement>(null!);
   const canvasRef = useRef<HTMLCanvasElement>(null!)
+  const [accuracy, setAccuracy] = useState([])
 
   const detectFaces = async () => {
+    //load model
     const model = await blazeface.load()
     const predictions = await model.estimateFaces(videoRef.current, false)
+    
+    //create canvas context
+    const { videoWidth, videoHeight } = videoRef.current
+    canvasRef.current.width = videoWidth
+    canvasRef.current.height = videoHeight
     const ctx = canvasRef.current.getContext("2d")
 
-    const { videoWidth, videoHeight } = videoRef.current
-
-    videoRef.current.width = videoWidth
-    videoRef.current.height = videoHeight
-
+    //draw face marks where exists
     if(ctx){
 
-      ctx.drawImage(videoRef.current, 0, 0, videoWidth, videoHeight)
+      ctx.rect(0, 0, videoWidth, videoHeight)
+
+      if(predictions.length > 1) {
+        ctx.fillStyle = "rgba(250, 37, 37, 0.2)"
+        ctx.fillRect(0, 0, videoWidth, videoHeight)
+      }else {
+        ctx.clearRect(0, 0, videoWidth, videoHeight)
+      }
       
       predictions.forEach( prediction => {
         const start: any = prediction.topLeft;
@@ -28,7 +38,7 @@ function App() {
         
         ctx.beginPath()
         ctx.lineWidth = 4
-        ctx.strokeStyle = "green"
+        ctx.strokeStyle = predictions.length > 1 ? 'red' : 'green'
         ctx.rect(
           start[0] - 10, start[1] - 70, size[0] + 10, size[1] + 70
         )
@@ -37,9 +47,10 @@ function App() {
     }
   }
 
+  //load webcam
   const getVideo = () => {
     navigator.mediaDevices
-      .getUserMedia({ video: true })
+      .getUserMedia({ video: true, audio: false })
       .then((stream) => {
         let video = videoRef.current;
         video.srcObject = stream;
@@ -48,15 +59,16 @@ function App() {
           setInterval(() => detectFaces(), 100)
         });
       })
-      .catch((err) => console.log(err));
+      .catch((err) => alert('Sorry, video device not detected or permission denied!'));
   };
 
-  useEffect(() => getVideo(), [videoRef]);
+  useEffect(() => getVideo(), []);
 
   return (
     <div className={styles.webcam}>
-      <video ref={videoRef} style={{display: "none"}}></video>
-      <canvas ref={canvasRef} width={640} height={480}></canvas>
+      <video ref={videoRef}></video>
+      <canvas ref={canvasRef}></canvas>
+      <p>{}</p>
     </div>
   );
 }
