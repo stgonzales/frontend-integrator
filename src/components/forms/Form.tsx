@@ -3,15 +3,17 @@ import { AppContext } from "../../contexts/AppContext";
 import { AtendeeContext } from "../../contexts/AtendeeContext";
 
 export default function Form() {
-  const { handleAtendee } = useContext(AtendeeContext);
-  const { handleNextStep } = useContext(AppContext);
+  const { handleSetAtendee } = useContext(AtendeeContext);
+  const { handleNextStep, handleLoading } = useContext(AppContext);
   const [email, setName] = useState("");
   const [orderId, setOrderId] = useState("");
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
 
-    handleAtendee(email, orderId);
+    handleLoading(true);
+    handleSetAtendee(email, orderId);
+    handleLoading(false);
     handleNextStep();
   };
 
@@ -23,7 +25,7 @@ export default function Form() {
         className="flex flex-col justify-center items-center py-6"
       >
         <div className="w-10/12 flex flex-col">
-          <label htmlFor="ticket_number">Ticket Number</label>
+          <label htmlFor="ticket_number">numero do ticket</label>
           <input
             type="text"
             name="ticket_number"
